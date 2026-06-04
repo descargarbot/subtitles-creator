@@ -54,6 +54,6 @@ optional, translation:<br>
 ## NOTE
 
 1) Especially designed for the target language to be neutral Spanish, but it can translate other langs -> other langs.
-2) Mostly code with LLMs + 20 years of coding without it.
+2) Mostly code with LLMs + 20 years of coding without it :P
 
 
