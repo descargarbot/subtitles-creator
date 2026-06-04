@@ -31,7 +31,6 @@ Before using it, you need to have installed:
 
 Give execution permissions to the script:
 ```
-bash
 chmod +x run_pipeline.sh
 ./run_pipeline.sh "file .mp4 or .wav"
 ```
@@ -54,6 +53,7 @@ optional, translation:<br>
 
 ## NOTE
 
-Especially designed for the target language to be neutral Spanish, but it can translate other langs -> other langs
+1) Especially designed for the target language to be neutral Spanish, but it can translate other langs -> other langs.
+2) Mostly code with LLMs + 20 years of coding without it.
 
 
