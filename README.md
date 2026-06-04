@@ -2,7 +2,7 @@
 
 Tool to create subtitles from .wav or .mp4 files, mainly intended for movies.
 
-Generates subtitles using **local Whisper** and, optionally, **diarization with pyannote** to separate speakers.
+Generates subtitles using **local Whisper** and, **diarization with pyannote** to separate speakers.
 
 ---
 
