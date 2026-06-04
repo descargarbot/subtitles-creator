@@ -32,7 +32,7 @@ Before using it, you need to have installed:
 Give execution permissions to the script:
 ```
 chmod +x run_pipeline.sh
-./run_pipeline.sh "file .mp4 or .wav"
+LANGUAGE=en WHISPER_MODEL=large-v3 ./run_pipeline.sh ".mp4 or .wav"
 ```
 
 ---
