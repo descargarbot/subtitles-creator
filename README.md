@@ -30,11 +30,11 @@ Before using it, you need to have installed:
 ## Installation
 
 Give execution permissions to the script:
-
+```
 bash
 chmod +x run_pipeline.sh
 ./run_pipeline.sh "file .mp4 or .wav"
-
+```
 
 ---
 
