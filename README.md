@@ -55,5 +55,6 @@ optional, translation:<br>
 
 1) Especially designed for the target language to be neutral Spanish, but it can translate other langs -> other langs.
 2) Mostly code with LLMs + 20 years of coding without it :P
+3) in run_pipeline.sh the variable LANGUAGE="en" is hardcoded to "en" (source lang), it's recommended to set it using the 2-digit ISO code of the source language ("it", "jp", "fr", etc). 'auto' means auto-detect, but i recommend that only for multilingual movies.
 
 
