@@ -1,7 +1,3 @@
-# -------------------------------------------------------------------
-# Configuración
-# -------------------------------------------------------------------
-API_KEY = ""  # Tu API key
 import requests
 import re
 import time
@@ -11,18 +7,19 @@ from functools import lru_cache
 # -------------------------------------------------------------------
 # Configuración
 # -------------------------------------------------------------------
-INPUT_FILE = "" # .srt sin traducir *final.srt que dejo subtitles-creator/
-OUTPUT_FILE = "" # .srt con el output name file
+API_KEY = ""  # DeepSeek API key
+INPUT_FILE = "" # file name of source, to translate (.srt)
+OUTPUT_FILE = "" # file name of the output of tranlation (.srt)
 
-BATCH_SIZE = 30
-MAX_RETRIES = 5
-
-# Fuente: "auto" o código ISO: it, en, ja, zh, ru, etc.
-SOURCE_LANGUAGE = "it"
+# Fuente: "auto" o código ISO: it, en, ja, zh, ru, etc. IMPORTANT: Recommended ISO code.
+SOURCE_LANGUAGE = ""
 
 # Destino: es, en, it, fr, pt, de, ar, zh, ja, ko, ru, sr, etc.
 # Nota: serbio es "sr", no "rs". Si pones "rs", se convierte a "sr".
-TARGET_LANGUAGE = "es"
+TARGET_LANGUAGE = ""
+
+BATCH_SIZE = 30
+MAX_RETRIES = 5
 
 # Auditoría
 AUDIT_CONTEXT_RADIUS = 2
@@ -673,15 +670,25 @@ REGLAS INQUEBRANTABLES:
    No uses voseo (vos) ni expresiones como “vale”, “tío”, “che”, etc.
 
 3) FORMATO DE RESPUESTA:
-   - Responde exclusivamente con los subtítulos en este formato:
-     [index] texto traducido
 
-   - Conserva exactamente cada índice.
-   - No resegmente subtítulos.
-   - No agregues timestamps.
-   - No repitas líneas de referencia, encabezados, etiquetas ni explicaciones.
-   - Si un subtítulo original tiene varias líneas, puedes unirlas en una sola línea si eso suena natural en {target_lang_label}.
+    - Responde exclusivamente con los subtítulos en este formato:
+      [index] texto traducido
 
+    - Conserva exactamente cada índice.
+    - No resegmente subtítulos.
+    - No agregues timestamps.
+    - No repitas líneas de referencia, encabezados, etiquetas ni explicaciones.
+
+    - Si un subtítulo original tiene varias líneas:
+      - DEBES conservar exactamente la misma cantidad de líneas.
+      - Cada línea debe mantenerse separada (usar saltos de línea).
+      - No unas múltiples líneas en una sola.
+
+    - Si el subtítulo contiene diálogo (líneas que comienzan con "-" o "—"):
+      - Mantén cada intervención en una línea separada.
+      - Cada línea debe comenzar con "—".
+      - No fusiones intervenciones de distintos hablantes.
+      
 {format_examples}
 
 ¡ATENCIÓN OBLIGATORIA!
@@ -846,25 +853,29 @@ def translate_batch(batch, source_lang):
 # -------------------------------------------------------------------
 # Utilidades para fallback y terminal
 # -------------------------------------------------------------------
-def normalize_soft_hyphen_final(text):
-    """
-    Última pasada antes de escribir:
-    reemplaza líneas que sean SOLO '-' o '- ' por U+00AD.
-    No toca líneas que tengan diálogo real, por ejemplo '- Hola'.
-    """
+def split_joined_dialogue_lines(text):
     if not text:
         return text
 
-    lines = text.split("\n")
-    fixed = []
+    text = normalize_dashes(text)
+    text = text.replace(" —", "\n- ").replace(" -", "\n- ")
 
-    for line in lines:
-        if line.strip() == "-":
-            fixed.append(SOFT_HYPHEN)
+    parts = text.split("\n")
+    out = []
+
+    for part in parts:
+        s = part.strip()
+        if not s:
+            continue
+
+        if s.startswith("- ") and " - " in s[2:]:
+            first, rest = s[2:].split(" - ", 1)
+            out.append("- " + first.strip())
+            out.append("- " + rest.strip())
         else:
-            fixed.append(line)
+            out.append(s)
 
-    return "\n".join(fixed)
+    return "\n".join(out)
 
 
 def restore_batch_to_original(batch):
@@ -1865,10 +1876,9 @@ def main():
     # 3. Guardado
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         for i, sub in enumerate(subtitles):
-            # Si el lote falló, se deja el original intacto.
             if sub.get("batch_ok", True):
                 final_text = sub.get("text", "")
-                final_text = normalize_soft_hyphen_final(final_text)
+                final_text = split_joined_dialogue_lines(final_text)
                 if not final_text.strip():
                     final_text = sub.get("original_text", "")
             else:
